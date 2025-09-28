@@ -1,5 +1,6 @@
 #include "../includes/bus.h"
 #include "../includes/cart.h"
+#include "../includes/ram.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,18 +12,11 @@ uint8_t bus_read(uint16_t addr)
     else if (addr < 0xA000)     // VRAM 8KiB
     {
         printf("VRAM: Read not implemented\n");
-        exit(0);
     }
-    else if (addr < 0xC000)     // RAM 4KiB
-    {
-        printf("RAM: Read not implemented\n");
-        exit(0);
-    }
+    else if (addr < 0xC000)     // ROM EXT (ROM) 32Kib RAM 4KiB
+        return rom_read(addr);
     else if (addr < 0xE000)     // WRAM 8Kib
-    {
-        printf("WRAM: Read not implemented\n");
-        exit(0);
-    }
+        return wram_read(addr);
     else if (addr < 0xFE00)     // Echo RAM
     {
         printf("ECHO RAM: Read is prohibited\n");
@@ -44,10 +38,7 @@ uint8_t bus_read(uint16_t addr)
         exit(0);
     }
     else if (addr < 0xFFFF)     // HRAM
-    {
-        printf("HRAM: Read not implemented\n");
-        exit(0);
-    }
+        return hram_read(addr);
     else if (addr == 0xFFFF)     // IE
     {
         printf("IE: Read not implemented\n");
@@ -64,25 +55,16 @@ uint8_t bus_read(uint16_t addr)
 void bus_write(uint16_t addr, uint8_t value)
 {
     if (addr < 0x8000)          // ROM 32Kib
-    {
-        printf("ROM: Can't write here\n");
-        exit(0);
-    }
+        rom_write(addr, value);
     else if (addr < 0xA000)     // VRAM 8KiB
     {
         printf("VRAM: Read not implemented\n");
         exit(0);
     }
     else if (addr < 0xC000)     // RAM 4KiB
-    {
-        printf("RAM: Read not implemented\n");
-        exit(0);
-    }
+        rom_write(addr, value);
     else if (addr < 0xE000)     // WRAM 8Kib
-    {
-        printf("WRAM: Read not implemented\n");
-        exit(0);
-    }
+        wram_write(addr, value);
     else if (addr < 0xFE00)     // Echo RAM
     {
         printf("ECHO RAM: Read is prohibited\n");
@@ -104,10 +86,7 @@ void bus_write(uint16_t addr, uint8_t value)
         exit(0);
     }
     else if (addr < 0xFFFF)     // HRAM
-    {
-        printf("HRAM: Read not implemented\n");
-        exit(0);
-    }
+        return hram_write(addr, value);
     else if (addr == 0xFFFF)     // IE
     {
         printf("IE: Read not implemented\n");
