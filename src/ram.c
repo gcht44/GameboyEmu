@@ -28,13 +28,3 @@ void wram_write(uint16_t addr, uint8_t value)
     addr -= 0xC000;
     wram[addr] = value;
 }
-
-void push(s_CPU *c, uint8_t value)
-{
-    bus_write(--(c->sp), value);
-}
-
-uint8_t pop(s_CPU *c)
-{
-    return bus_read(c->sp++);
-}
