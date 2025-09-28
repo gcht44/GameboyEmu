@@ -21,6 +21,9 @@ typedef struct CPU
     bool nf;
     bool hf;
     bool cy;
+
+    bool ime;
+    bool halt;
 } s_CPU;
 
 #endif
