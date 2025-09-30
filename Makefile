@@ -12,7 +12,10 @@ OBJSDIR = obj
 SRCS = main.c \
 	   cpu.c \
 	   cart.c \
-	   bus.c
+	   bus.c \
+	   ram.c \
+	   io.c \
+	   timer.c
 
 # LIBFLAG = -L $(LIBDIR) -l SDL3 # Permet de compiler SDL
 
