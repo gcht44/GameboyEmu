@@ -2,6 +2,9 @@
 #include "../includes/cpu.h"
 #include "../includes/bus.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 static uint8_t wram[0x2000];
 static uint8_t hram[0x80];
 
