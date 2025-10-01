@@ -1,5 +1,6 @@
 #include "../includes/timer.h"
 #include "../includes/cpu.h"
+#include "../includes/ppu.h"
 
 #include <stdio.h>
 
@@ -79,6 +80,7 @@ void step_timer(uint8_t m_cycles)
 
     for (int i=0 ; i < m_cycles ; i++)
     {
+        ppu_tick();
         div += 4;
         new_div_bit = (div>>idx) & 1;
         /*if (pending_cycles > 0)
