@@ -9,15 +9,17 @@ INCDIR = includes
 LIBDIR = lib
 BINDIR = bin
 OBJSDIR = obj
-SRCS = main.c \
-	   cpu.c \
-	   cart.c \
-	   bus.c \
-	   ram.c \
-	   io.c \
-	   timer.c
+SRCS = main.c  \
+	   cpu.c   \
+	   cart.c  \
+	   bus.c   \
+	   ram.c   \
+	   io.c    \
+	   timer.c \
+	   ppu.c   \
+	   video.c \
 
-# LIBFLAG = -L $(LIBDIR) -l SDL3 # Permet de compiler SDL
+LIBFLAG = -L $(LIBDIR) -l SDL3 # Permet de compiler SDL
 
 OBJS = $(addprefix $(OBJSDIR)/, $(SRCS:.c=.o)) # addprefix: ajoute le prefixe OBJSDIR/ devant toutes les valuers | $(SRCS:.c=.o): Change toutes les extensions en .o
 
@@ -25,8 +27,7 @@ OBJS = $(addprefix $(OBJSDIR)/, $(SRCS:.c=.o)) # addprefix: ajoute le prefixe OB
 all: $(NAME)
 
 $(NAME): $(OBJS) | $(BINDIR) # Avec le |, $(OBJSDIR) est une dépendance d’ordre : Make s’assure juste que le dossier existe, mais sa modification ne force pas la recompilation des .o
-	$(CC) -o $(BINDIR)/$@ $^ 
-# $(LIBFLAG)
+	$(CC) -o $(BINDIR)/$@ $^ $(LIBFLAG)
 
 $(OBJSDIR)/%.o: $(SRCDIR)/%.c | $(OBJSDIR)# Toutes les cibles en .o je vais les créer à partir de toutes les dépendances .c
 	$(CC) $(CFLAGS) -I $(INCDIR) -c $< -o $@ 
