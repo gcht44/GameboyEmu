@@ -4,6 +4,7 @@
 #include "../includes/io.h"
 #include "../includes/cpu.h"
 #include "../includes/timer.h"
+#include "../includes/ppu.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,9 +20,7 @@ uint8_t bus_read(uint16_t addr, bool update_timer)
     if (addr < 0x8000)          // ROM 32Kib
         return rom_read(addr);
     else if (addr < 0xA000)     // VRAM 8KiB
-    {
-        // printf("VRAM: Read not implemented\n");
-    }
+        return vram_read(addr);
     else if (addr < 0xC000)     // ROM EXT (ROM) 32Kib RAM 4KiB
         return rom_read(addr);
     else if (addr < 0xE000)     // WRAM 8Kib
@@ -62,10 +61,7 @@ void bus_write(uint16_t addr, uint8_t value, bool update_timer)
     if (addr < 0x8000)          // ROM 32Kib
         rom_write(addr, value);
     else if (addr < 0xA000)     // VRAM 8KiB
-    {
-        // printf("VRAM: Read not implemented\n");
-        // exit(0);
-    }
+        vram_write(addr, value);
     else if (addr < 0xC000)     // RAM 4KiB
         rom_write(addr, value);
     else if (addr < 0xE000)     // WRAM 8Kib
