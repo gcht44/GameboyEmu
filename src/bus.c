@@ -5,12 +5,18 @@
 #include "../includes/cpu.h"
 #include "../includes/timer.h"
 #include "../includes/ppu.h"
+#include "../includes/oam_dma.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 uint8_t bus_read(uint16_t addr, bool update_timer)
 {
+    /*if (dma_is_active() && ((addr >= 0xFF80) && (addr < 0xFFFF)))
+        return hram_read(addr);
+    else
+        return 0xFF;*/
+
     if (update_timer)
     {
         // printf("update_timer = true");
@@ -32,8 +38,7 @@ uint8_t bus_read(uint16_t addr, bool update_timer)
     }
     else if (addr < 0xFEA0)     // OAM
     {
-        // printf("OAM: Read not implemented\n");
-        // exit(0);
+        oam_read(addr);
     }
     else if (addr < 0xFF00)     // Not usable
     {
@@ -56,6 +61,14 @@ uint8_t bus_read(uint16_t addr, bool update_timer)
 
 void bus_write(uint16_t addr, uint8_t value, bool update_timer)
 {
+    /*if (dma_is_active() && ((addr >= 0xFF80) && (addr < 0xFFFF)))
+    {
+        hram_write(addr, value);
+        return;
+    }
+    else
+        return;*/
+
     if (update_timer)
         step_timer(1);
     if (addr < 0x8000)          // ROM 32Kib
@@ -73,8 +86,7 @@ void bus_write(uint16_t addr, uint8_t value, bool update_timer)
     }
     else if (addr < 0xFEA0)     // OAM
     {
-        // printf("OAM: Read not implemented\n");
-        // exit(0);
+        oam_write(addr, value);
     }
     else if (addr < 0xFF00)     // Not usable
     {

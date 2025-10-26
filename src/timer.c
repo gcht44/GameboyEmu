@@ -83,14 +83,6 @@ void step_timer(uint8_t m_cycles)
         ppu_tick();
         div += 4;
         new_div_bit = (div>>idx) & 1;
-        /*if (pending_cycles > 0)
-            pending_cycles--;
-        else if (pending_cycles == 0)
-        {
-            pending_cycles = -1;
-            pending_overflow = false;
-            tima = tma;
-        }*/
         if (tima_enable && (new_div_bit == 0) && (last_div_bit == 1))
         {
             // printf("TIMA ++\n");
@@ -102,5 +94,6 @@ void step_timer(uint8_t m_cycles)
                 cpu_request_interrupt(IT_TIMER);
             }
         }
+        last_div_bit = new_div_bit;
     }
 }

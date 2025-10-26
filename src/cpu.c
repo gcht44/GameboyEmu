@@ -5,6 +5,7 @@
 #include "../includes/cpu.h"
 #include "../includes/bus.h"
 #include "../includes/timer.h"
+#include "../includes/oam_dma.h"
 
 static int cycles;
 static uint8_t ie;
@@ -2252,6 +2253,8 @@ void step_emu(s_CPU *c)
 {
     // printf("test\n");
     // exit(0);
+    dma_cycles();
+
     uint8_t interrupt_flag = bus_read(0xFF0F, true);
 
     if (bus_read(0xFF02, false) == 0x81)
@@ -2263,7 +2266,7 @@ void step_emu(s_CPU *c)
     if ((interrupt_flag & ie) != 0)
         c->halt = 0;
 
-    if ((c->ime == 1) && ((interrupt_flag & ie) != 0))
+    if ((c->ime == 1) && ((interrupt_flag & ie) != 0) && !dma_is_active())
     {
         irq(c, interrupt_flag);
     }
