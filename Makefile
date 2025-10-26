@@ -18,6 +18,9 @@ SRCS = main.c  \
 	   timer.c \
 	   ppu.c   \
 	   video.c \
+	   lcd.c   \
+	   joypad.c \
+	   oam_dma.c \
 
 LIBFLAG = -L $(LIBDIR) -l SDL3 # Permet de compiler SDL
 
