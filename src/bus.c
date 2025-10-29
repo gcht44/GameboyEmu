@@ -20,7 +20,7 @@ uint8_t bus_read(uint16_t addr, bool update_timer)
     if (update_timer)
     {
         // printf("update_timer = true");
-        step_timer(1);
+        // step_timer(1);
     }
 
     if (addr < 0x8000)          // ROM 32Kib
@@ -28,7 +28,7 @@ uint8_t bus_read(uint16_t addr, bool update_timer)
     else if (addr < 0xA000)     // VRAM 8KiB
         return vram_read(addr);
     else if (addr < 0xC000)     // ROM EXT (ROM) 32Kib RAM 4KiB
-        return rom_read(addr);
+        return external_ram_read(addr);
     else if (addr < 0xE000)     // WRAM 8Kib
         return wram_read(addr);
     else if (addr < 0xFE00)     // Echo RAM
@@ -70,13 +70,15 @@ void bus_write(uint16_t addr, uint8_t value, bool update_timer)
         return;*/
 
     if (update_timer)
-        step_timer(1);
+    {
+        // step_timer(1);
+    }
     if (addr < 0x8000)          // ROM 32Kib
         rom_write(addr, value);
     else if (addr < 0xA000)     // VRAM 8KiB
         vram_write(addr, value);
-    else if (addr < 0xC000)     // RAM 4KiB
-        rom_write(addr, value);
+    else if (addr < 0xC000)     // EXT RAM 4KiB
+        external_ram_write(addr, value);
     else if (addr < 0xE000)     // WRAM 8Kib
         wram_write(addr, value);
     else if (addr < 0xFE00)     // Echo RAM
