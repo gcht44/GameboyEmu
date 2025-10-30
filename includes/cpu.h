@@ -37,7 +37,7 @@ typedef enum {
 } s_Int_Type;
 
 void init_cpu(s_CPU *c);
-void step_emu(s_CPU *c);
+uint8_t step_emu(s_CPU *c);
 unsigned long get_cyc();
 uint8_t get_ie();
 void set_ie(uint8_t v);
