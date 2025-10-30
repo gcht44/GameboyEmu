@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 
-static uint16_t div = 0x00CA;
+static uint16_t div = 0x0000;
 static uint8_t tima;
 static uint8_t tma;
-static uint8_t tac;
+static uint8_t tac = 0xF8;
 // static bool pending_overflow;
 // static uint8_t pending_cycles = -1;
 
@@ -80,14 +80,18 @@ void step_timer(uint8_t m_cycles)
 
     for (int i=0 ; i < m_cycles ; i++)
     {
-        ppu_tick();
+        for (int j=0 ; j<4 ; j++)
+        {
+            ppu_tick();
+        }
+
         div += 4;
         new_div_bit = (div>>idx) & 1;
         if (tima_enable && (new_div_bit == 0) && (last_div_bit == 1))
         {
             // printf("TIMA ++\n");
             tima++;
-            if (tima == 0xFF)
+            if (tima == 0x00)
             {
                 tima = tma;
 
