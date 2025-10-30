@@ -34,10 +34,10 @@ void update_index_color()
 
 void update_obj_palettes()
 {
-    // Mise à jour de la palette OBP0
+    // OBP0
     build_palette(lcd.OBP0, lcd.obj_index_color[0]);
     
-    // Mise à jour de la palette OBP1
+    // OBP1
     build_palette(lcd.OBP1, lcd.obj_index_color[1]);
 }
 
