@@ -47,7 +47,7 @@ uint8_t dma_bus_read(uint16_t addr, bool update_timer)
     else if (addr < 0xA000)     // VRAM 8KiB
         return vram_read(addr);
     else if (addr < 0xC000)     // ROM EXT (ROM) 32Kib RAM 4KiB
-        return rom_read(addr);
+        return external_ram_read(addr);
     else if (addr < 0xE000)     // WRAM 8Kib
         return wram_read(addr);
     else if (addr < 0xFE00)     // Echo RAM
@@ -87,7 +87,7 @@ void dma_bus_write(uint16_t addr, uint8_t value, bool update_timer)
     else if (addr < 0xA000)     // VRAM 8KiB
         vram_write(addr, value);
     else if (addr < 0xC000)     // RAM 4KiB
-        rom_write(addr, value);
+        external_ram_write(addr, value);
     else if (addr < 0xE000)     // WRAM 8Kib
         wram_write(addr, value);
     else if (addr < 0xFE00)     // Echo RAM
