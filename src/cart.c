@@ -20,7 +20,11 @@ typedef struct Cart_Header
     uint16_t global_checksum;
 } s_Cart_Header;
 
+static uint8_t *ext_ram = NULL;
+static uint32_t ext_ram_size;
+
 static uint8_t *memory = NULL;
+
 static s_Cart_Header sch;
 
 uint8_t calculate_checksum()
@@ -71,7 +75,27 @@ void load_header() {
 
     // RAM Size
     sch.ram_size = memory[0x0149];
-
+    if (sch.ram_size == 0x02)
+    {
+        ext_ram_size =  8*1024;   
+        ext_ram = malloc(8*1024);
+    }
+    else if (sch.ram_size == 0x03)
+    {
+        ext_ram_size =  32*1024;  
+        ext_ram = malloc(32*1024);
+    }
+    else if (sch.ram_size == 0x04)
+    {
+        ext_ram_size =  128*1024;  
+        ext_ram = malloc(128*1024);
+    }
+    else if (sch.ram_size == 0x05)
+    {
+        ext_ram_size =  32*1024;  
+        ext_ram = malloc(64*1024);
+    }
+    
     // Destination Code
     sch.destination_code = memory[0x014A];
 
@@ -112,15 +136,57 @@ int load_rom(const char *path)
     printf("RAM Size : %02X\n", sch.ram_size);
     printf("LIC Code : %02X\n", sch.licensee_code);
     printf("ROM Checksum : %s (%02X)\n", (calculate_checksum() == sch.checksum) ? "OK" : "NOT VALID", sch.checksum);
+
+    // mbc_index = 0x4000;
+
+    if (sch.cartridge_type == 0x03) // For load external ram (ROM+BATTERY)
+    {
+
+    }
     return 0;
 }
 
 uint8_t rom_read(uint16_t addr)
 {
-    return memory[addr];
+    if (addr < 0x4000) 
+    {
+        return memory[addr];
+    }
+    else if ((addr >= 0x4000) && (addr < 0x8000)) 
+    {
+        return memory[addr - 0x4000 + mbc_index];
+    }
+    
+    return 0xFF;
 }
 
 void rom_write(uint16_t addr, uint8_t value)
 {
-    memory[addr] = value;
+    if (sch.cartridge_type == 0) // ROM ONLY
+        return;
+    else if (sch.cartridge_type >= 0x19 && sch.cartridge_type <= 0x1E) // MBC5
+        mbc_5(addr, value, ext_ram_size);
+    else if (sch.cartridge_type >= 0x01 && sch.cartridge_type <= 0x03) // MBC1
+        mbc_1(addr, value, ext_ram_size);
+}
+
+uint8_t external_ram_read(uint16_t addr)
+{
+    if (ext_ram_active && ext_ram) 
+    {
+        return ext_ram[(addr - 0xA000) + ext_ram_index];
+    }
+    return 0xFF;
+}
+
+void external_ram_write(uint16_t addr, uint8_t value)
+{
+    if (ext_ram_active) 
+    {
+        uint32_t ram_addr = (addr - 0xA000) + ext_ram_index;
+        if (ram_addr < ext_ram_size) 
+        {
+            ext_ram[ram_addr] = value;
+        }
+    }
 }
