@@ -41,28 +41,37 @@ void convert_frame_buffer(const uint8_t *fb_src)
 
 int init_sdl()
 {
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) 
+    {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
     }
 
-    win = SDL_CreateWindow("GameBoy Emulator", W, H, 0);
-    if (!win) {
+    const int SCALE_FACTOR = 3;
+    win = SDL_CreateWindow("GameBoy Emulator", W * SCALE_FACTOR, H * SCALE_FACTOR, 0);
+    if (!win) 
+    {
         SDL_Log("CreateWindow failed: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
     ren = SDL_CreateRenderer(win, NULL);
-    if (!ren) {
+    if (!ren) 
+    {
         SDL_Log("CreateRenderer failed: %s", SDL_GetError());
         SDL_DestroyWindow(win);
         SDL_Quit();
         return 1;
     }
-    
-    // Activer VSync pour limiter naturellement à 60 FPS
-    if (!SDL_SetRenderVSync(ren, 1)) {
+
+    if (!SDL_SetRenderLogicalPresentation(ren, W, H, SDL_LOGICAL_PRESENTATION_LETTERBOX)) 
+    {
+        SDL_Log("Warning: Logical presentation failed: %s", SDL_GetError());
+    }
+
+    if (!SDL_SetRenderVSync(ren, 1)) 
+    {
         SDL_Log("Warning: VSync failed: %s", SDL_GetError());
     }
     
@@ -78,33 +87,28 @@ void SDL_exit()
 
 void draw_pixels(const uint8_t* framebuffer)
 {
-    uint32_t last_render_time = 0;
-    uint32_t TARGET_FPS = 60;
-    uint32_t FRAME_TIME_MS = 1000 / TARGET_FPS; // ~16.67
-    // Limiter le rendu à 60 FPS
-    uint32_t current_time = SDL_GetTicks();
-    if (current_time - last_render_time < FRAME_TIME_MS) {
-        return; // Skip ce rendu si trop tôt
-    }
-    last_render_time = current_time;
-
-    // Créer la texture une fois si besoin
-    if (!ptex) {
+    if (!ptex) 
+    {
         ptex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, 
                                SDL_TEXTUREACCESS_STREAMING, W, H);
-        if (!ptex) {
+        if (!ptex) 
+        {
             SDL_Log("Erreur: Impossible de créer la texture SDL: %s", SDL_GetError());
             return;
         }
+        
+        if (!SDL_SetTextureScaleMode(ptex, SDL_SCALEMODE_NEAREST)) 
+        {
+            SDL_Log("Warning: Texture scale mode failed: %s", SDL_GetError());
+        }
     }
 
-    // Vérifier que le framebuffer n'est pas NULL
-    if (!framebuffer) {
+    if (!framebuffer) 
+    {
         SDL_Log("Framebuffer is NULL!");
         return;
     }
 
-    // Utiliser une palette précalculée pour une conversion plus rapide
     static const uint32_t palette[4] = {
         0xFFFFFFFF,  // Blanc
         0xFFAAAAAA,  // Gris clair
@@ -112,27 +116,29 @@ void draw_pixels(const uint8_t* framebuffer)
         0xFF000000   // Noir
     };
     
-    // Convertir le framebuffer en une seule passe
     for (int i = 0; i < H*W; i++) 
         fb[i] = palette[framebuffer[i] & 3];
 
-    // Mise à jour de la texture et rendu
-    if (!SDL_UpdateTexture(ptex, NULL, fb, W * sizeof(uint32_t))) {
+    if (!SDL_UpdateTexture(ptex, NULL, fb, W * sizeof(uint32_t))) 
+    {
         SDL_Log("Erreur SDL_UpdateTexture: %s", SDL_GetError());
         return;
     }
 
-    if (!SDL_RenderClear(ren)) {
+    if (!SDL_RenderClear(ren)) 
+    {
         SDL_Log("Erreur SDL_RenderClear: %s", SDL_GetError());
         return;
     }
 
-    if (!SDL_RenderTexture(ren, ptex, NULL, NULL)) {
+    if (!SDL_RenderTexture(ren, ptex, NULL, NULL)) 
+    {
         SDL_Log("Erreur SDL_RenderTexture: %s", SDL_GetError());
         return;
     }
 
-    if (!SDL_RenderPresent(ren)) {
+    if (!SDL_RenderPresent(ren)) 
+    {
         SDL_Log("Erreur SDL_RenderPresent: %s", SDL_GetError());
         return;
     }
