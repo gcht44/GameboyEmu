@@ -313,78 +313,71 @@ void render_pixel()
     uint8_t sprite_pixel = 0;
     uint8_t sprite_color_id = 0;
     bool sprite_bg_priority = false;
-    int8_t highest_priority_sprite = -1;
+    // int8_t highest_priority_sprite = -1;
     uint8_t lowest_x = 255;
     
-    if (lcd.obj_enable) // Pour rendre un pixel d'un sprite
+    if (lcd.obj_enable)
     {
-        for (int i_oam = 0; i_oam < oam_scan_size; i_oam++) // trouver le sprite avec la plus petite coordonnée X
+        for (int i_oam = 0; i_oam < oam_scan_size; i_oam++)
         {
             if ((ppu_struct.x >= oam_scan[i_oam].x - 8) && (ppu_struct.x < oam_scan[i_oam].x))
             {
-                if (oam_scan[i_oam].x < lowest_x)
-                {
-                    lowest_x = oam_scan[i_oam].x;
-                    highest_priority_sprite = i_oam;
-                }
-                else if (oam_scan[i_oam].x == lowest_x)
-                {
-                    continue;
-                }
-            }
-        }
-        
-        if (highest_priority_sprite != -1)
-        {
-            int i_oam = highest_priority_sprite;
-            uint8_t pixel_x = ppu_struct.x - (oam_scan[i_oam].x - 8);
-            uint8_t pixel_y = ppu_struct.ly - (oam_scan[i_oam].y - 16);
-            uint8_t tile_index;
+                uint8_t pixel_x = ppu_struct.x - (oam_scan[i_oam].x - 8);
+                uint8_t pixel_y = ppu_struct.ly - (oam_scan[i_oam].y - 16);
+                uint8_t tile_index;
 
-            bool flip_x = (oam_scan[i_oam].flags & 0x20) != 0;
-            bool flip_y = (oam_scan[i_oam].flags & 0x40) != 0;
-            sprite_bg_priority = (oam_scan[i_oam].flags & 0x80) != 0;
-            
-            if (flip_y)
-            {
+                bool flip_x = (oam_scan[i_oam].flags & 0x20) != 0;
+                bool flip_y = (oam_scan[i_oam].flags & 0x40) != 0;
+                
+                if (flip_y)
+                {
+                    if (lcd.obj_size_8x16 == 8)
+                        pixel_y = 7 - pixel_y;
+                    else
+                        pixel_y = 15 - pixel_y;
+                }
+                
+                if (flip_x)
+                    pixel_x = 7 - pixel_x;
+
                 if (lcd.obj_size_8x16 == 8)
-                    pixel_y = 7 - pixel_y;
-                else
-                    pixel_y = 15 - pixel_y;
-            }
-            
-            if (flip_x)
-                pixel_x = 7 - pixel_x;
-
-            if (lcd.obj_size_8x16 == 8)
-            {
-                tile_index = oam_scan[i_oam].tile_index;
-            }
-            else
-            {
-                if (pixel_y < 8)
                 {
-                    tile_index = oam_scan[i_oam].tile_index & 0xFE;
+                    tile_index = oam_scan[i_oam].tile_index;
                 }
                 else
                 {
-                    tile_index = (oam_scan[i_oam].tile_index & 0xFE) + 1;
-                    pixel_y -= 8;
+                    if (pixel_y < 8)
+                    {
+                        tile_index = oam_scan[i_oam].tile_index & 0xFE;
+                    }
+                    else
+                    {
+                        tile_index = (oam_scan[i_oam].tile_index & 0xFE) + 1;
+                        pixel_y -= 8;
+                    }
                 }
-            }
-            
-            uint16_t tile_addr = 0x8000 + (tile_index * 16) + (pixel_y * 2);
-            uint8_t lsb = vram[tile_addr - 0x8000];
-            uint8_t msb = vram[tile_addr + 1 - 0x8000];
-            
-            uint8_t bit_pos = 7 - pixel_x;
-            sprite_color_id = (((msb >> bit_pos) & 1) << 1) | ((lsb >> bit_pos) & 1);
-            
-            if (sprite_color_id != 0)
-            {
-                uint8_t palette_flag = (oam_scan[i_oam].flags & 0x10) != 0;
-                uint8_t *sprite_palette = get_obj_index_color(palette_flag);
-                sprite_pixel = sprite_palette[sprite_color_id];
+                
+                uint16_t tile_addr = 0x8000 + (tile_index * 16) + (pixel_y * 2);
+                uint8_t lsb = vram[tile_addr - 0x8000];
+                uint8_t msb = vram[tile_addr + 1 - 0x8000];
+                
+                uint8_t bit_pos = 7 - pixel_x;
+                uint8_t temp_color_id = (((msb >> bit_pos) & 1) << 1) | ((lsb >> bit_pos) & 1);
+                
+                if (temp_color_id != 0)
+                {
+                    if (oam_scan[i_oam].x < lowest_x)
+                    {
+                        lowest_x = oam_scan[i_oam].x;
+                        // highest_priority_sprite = i_oam;
+                        sprite_color_id = temp_color_id;
+                        sprite_bg_priority = (oam_scan[i_oam].flags & 0x80) != 0;
+                        
+                        uint8_t palette_flag = (oam_scan[i_oam].flags & 0x10) != 0;
+                        uint8_t *sprite_palette = get_obj_index_color(palette_flag);
+                        sprite_pixel = sprite_palette[sprite_color_id];
+                    }
+                }
             }
         }
     }
@@ -392,7 +385,7 @@ void render_pixel()
 
     uint8_t final_pixel;
     
-    if (sprite_pixel != 0)
+    if (sprite_color_id != 0)
     {
         uint8_t bg_color_id = bg_pixel;
         if (sprite_bg_priority && (bg_color_id != lcd.index_color[0]))
@@ -408,7 +401,12 @@ void render_pixel()
     {
         final_pixel = bg_pixel;
     }
-    
+
+    if (final_pixel > 3) 
+    {
+        final_pixel = 0;
+    }
+
     framebuffer[fb_index++] = final_pixel;
 }
 
